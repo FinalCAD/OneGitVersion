@@ -51,7 +51,6 @@ func (s *GlobalGitVersion) ApplyVersioning(environment *Environment) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("New version %s\n", newVersion.String())
 	if newVersion != nil {
 		fmt.Printf("New version %s\n", newVersion.String())
 	}
