@@ -2,6 +2,7 @@ package ugit
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -54,6 +55,9 @@ func Push(r *git.Repository, accessToken string, tags bool) error {
 	} else if strings.HasPrefix(remoteUrl, "ssh://git@") {
 		tmp := remoteUrl[len("ssh://git@"):]
 		url = fmt.Sprintf("ssh://git@%s@%s", accessToken, tmp)
+	} else {
+		fmt.Printf("%s\n", remoteUrl)
+		return errors.New(fmt.Sprintf("Unknown url %s", remoteUrl))
 	}
 	fmt.Printf("Push with url %s\n", url)
 	args := []string{
