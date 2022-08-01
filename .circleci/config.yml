@@ -14,6 +14,8 @@ jobs:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
       - run: make
+      - run: |
+          ./workdir/one-git-version version
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
           paths:
@@ -21,7 +23,7 @@ jobs:
       - persist_to_workspace:
           root: ./workdir/
           paths:
-            - ./one-git-version/
+            - ./one-git-version
 
   publish:
     executor: golang
@@ -34,7 +36,8 @@ jobs:
             go install github.com/tcnksm/ghr@latest
             VERSION=$(./workspace/one-git-version version)
             echo ${VERSION}
-#            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+#            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./workspace/
+
 workflows:
   version: 2
   one-git-version:
