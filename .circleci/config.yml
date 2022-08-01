@@ -19,9 +19,9 @@ jobs:
           paths:
             - "/go/pkg/mod"
       - persist_to_workspace:
-          root: ./workdir
+          root: ./
           paths:
-            - ./local_packages/
+            - ./workdir/one-git-version/
 
   publish:
     executor: golang
