@@ -7,6 +7,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"log"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -38,14 +39,31 @@ func Tag(r *git.Repository, tag string) (bool, error) {
 	return true, nil
 }
 
-func Push(r *git.Repository, accessToken string) error {
+func Push(r *git.Repository, accessToken string, tags bool) error {
 	remoteUrl, err := GetRemoteUrl(r)
 	if err != nil {
 		return nil
 	}
-	tmp := remoteUrl[len("https://"):]
-	url := fmt.Sprintf("https://%s@%s", accessToken, tmp)
-	cmd := exec.Command("git", "push", "--tags", url)
+	var url string
+	if strings.HasPrefix(remoteUrl, "https://") {
+		tmp := remoteUrl[len("https://"):]
+		url = fmt.Sprintf("https://%s@%s", accessToken, tmp)
+	} else if strings.HasPrefix(remoteUrl, "http://") {
+		tmp := remoteUrl[len("http://"):]
+		url = fmt.Sprintf("http://%s@%s", accessToken, tmp)
+	} else if strings.HasPrefix(remoteUrl, "ssh://git@") {
+		tmp := remoteUrl[len("ssh://git@"):]
+		url = fmt.Sprintf("ssh://git@%s@%s", accessToken, tmp)
+	}
+	fmt.Printf("Push with url %s\n", url)
+	args := []string{
+		"push",
+	}
+	if tags {
+		args = append(args, "--tags")
+	}
+	args = append(args, url)
+	cmd := exec.Command("git", args[:]...)
 	var out bytes.Buffer
 	var outErr bytes.Buffer
 	cmd.Stdout = &out

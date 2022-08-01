@@ -50,8 +50,8 @@ func saveGitVersion(gitVersion GitVersion, version semver.Version, push bool) er
 	if err != nil {
 		return err
 	}
-	if created && push {
-		err = ugit.Push(gitVersion.GetRepository(), gitVersion.GetParameters().AccessToken)
+	if !created && push {
+		err = ugit.Push(gitVersion.GetRepository(), gitVersion.GetParameters().AccessToken, true)
 		if err != nil {
 			return err
 		}
