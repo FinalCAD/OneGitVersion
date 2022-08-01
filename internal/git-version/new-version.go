@@ -10,16 +10,16 @@ import (
 	"strings"
 )
 
-func getLastVersionFromTag(gitVersion GitVersion, name string, defaultVersion semver.Version) (*semver.Version, *object.Tag, error) {
+func getLastVersionFromTag(gitVersion GitVersion, name string, defaultVersion semver.Version) (*semver.Version, *object.Tag, bool, error) {
 	tags, err := gitVersion.GetRepository().TagObjects()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 
 	latestVersion := defaultVersion
 	var tagRef *object.Tag
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 
 	err = tags.ForEach(func(t *object.Tag) error {
@@ -30,7 +30,7 @@ func getLastVersionFromTag(gitVersion GitVersion, name string, defaultVersion se
 			if errs != nil {
 				return errs
 			}
-			if version.GT(latestVersion) {
+			if version.GTE(latestVersion) {
 				latestVersion = version
 				tagRef = t
 			}
@@ -38,55 +38,58 @@ func getLastVersionFromTag(gitVersion GitVersion, name string, defaultVersion se
 		return nil
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 
-	return &latestVersion, tagRef, nil
+	return &latestVersion, tagRef, tagRef != nil, nil
 }
 
-func getLastVersionFromWiki(gitVersion GitVersion, name string, environment *Environment, defaultVersion semver.Version) (*semver.Version, error) {
+func getLastVersionFromWiki(gitVersion GitVersion, name string, environment *Environment, defaultVersion semver.Version) (*semver.Version, bool, error) {
 	var preReleaseName string
 	if environment.IsPrerelease {
 		preReleaseName = gitVersion.GetBranchName()
 	}
 	page, err := gitVersion.GetWikiRepository().ReadPage(name, gitVersion.GetService().TagName, preReleaseName)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	versions := page.GetVersions()
 	if versions == nil {
 		latestVersion := defaultVersion
-		return &latestVersion, nil
+		return &latestVersion, false, nil
 	}
 	latestVersion := defaultVersion
+	found := false
 	for _, version := range versions {
-		if version.GT(latestVersion) {
+		if version.GTE(latestVersion) {
 			latestVersion = version
+			found = true
 		}
 	}
 
-	return &latestVersion, nil
+	return &latestVersion, found, nil
 }
 
 func createNewVersion(gitVersion GitVersion, environment *Environment, name string, bumpPatch bool) (*semver.Version, error) {
 	var latestVersion *semver.Version
 	var tagRef *object.Tag
 	var err error
+	var found bool
 	defaultVersion, err := semver.Make(gitVersion.GetService().Version)
 	if err != nil {
 		return nil, err
 	}
 	if gitVersion.GetService().TagType == TagTypeGit {
-		latestVersion, tagRef, err = getLastVersionFromTag(gitVersion, name, defaultVersion)
+		latestVersion, tagRef, found, err = getLastVersionFromTag(gitVersion, name, defaultVersion)
 	} else {
-		latestVersion, err = getLastVersionFromWiki(gitVersion, name, environment, defaultVersion)
+		latestVersion, found, err = getLastVersionFromWiki(gitVersion, name, environment, defaultVersion)
 	}
 	head, _ := gitVersion.GetRepository().Head()
 
 	if tagRef != nil && tagRef.Target == head.Hash() {
 		return latestVersion, nil
 	}
-	if bumpPatch && !latestVersion.Equals(defaultVersion) {
+	if bumpPatch && found {
 		err = latestVersion.IncrementPatch()
 		if err != nil {
 			return nil, err
