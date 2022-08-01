@@ -28,12 +28,12 @@ jobs:
     steps:
       - attach_workspace:
           at: ./workspace/
-      - run: ./workspace/one-git-version version
-#      - run:
-#          name: "Publish Release on GitHub"
-#          command: |
-#            go get github.com/tcnksm/ghr
-#            VERSION=$(my-binary --version)
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            go get github.com/tcnksm/ghr
+            VERSION=$(./workspace/one-git-version version)
+            echo ${VERSION}
 #            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
 workflows:
   version: 2
