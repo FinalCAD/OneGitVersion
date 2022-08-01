@@ -52,9 +52,9 @@ func Push(r *git.Repository, accessToken string, tags bool) error {
 	} else if strings.HasPrefix(remoteUrl, "http://") {
 		tmp := remoteUrl[len("http://"):]
 		url = fmt.Sprintf("http://%s@%s", accessToken, tmp)
-	} else if strings.HasPrefix(remoteUrl, "ssh://git@") {
-		tmp := remoteUrl[len("ssh://git@"):]
-		url = fmt.Sprintf("ssh://git@%s@%s", accessToken, tmp)
+	} else if strings.HasPrefix(remoteUrl, "git@") {
+		tmp := strings.ReplaceAll(remoteUrl[len("git@"):], ":", "/")
+		url = fmt.Sprintf("https://%s@%s", accessToken, tmp)
 	} else {
 		fmt.Printf("%s\n", remoteUrl)
 		return errors.New(fmt.Sprintf("Unknown url %s", remoteUrl))
