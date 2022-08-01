@@ -17,8 +17,14 @@ var (
 	envPath     string
 	accessToken string
 )
+
 var rootCmd = &cobra.Command{
-	Use:   "GitVersionOne",
+	Use:   "OneGitVersion",
+	Short: "Apply version to different libraries and applications in repository",
+}
+
+var applyCmd = &cobra.Command{
+	Use:   "apply",
 	Short: "Apply version to different libraries and applications in repository",
 	Run: func(cmd *cobra.Command, args []string) {
 		absolutePath, err := filepath.Abs(path)
@@ -59,7 +65,15 @@ func run(services []string, config *git_version.VersionConfig, repoPath string) 
 	return nil
 }
 
-func Execute() {
+func Execute(version string) {
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of OneGitVersion",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("%s\n", version)
+		},
+	})
+	rootCmd.AddCommand(applyCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -67,11 +81,11 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringVar(&path, "path", ".", "The path of the repository")
-	rootCmd.MarkFlagRequired("path")
-	rootCmd.Flags().StringVar(&accessToken, "access-token", "", "The access token for git")
-	rootCmd.MarkFlagRequired("access-token")
-	rootCmd.Flags().StringArrayVar(&services, "service", []string{}, "Limit to this service")
-	rootCmd.Flags().BoolVar(&noPush, "no-push", false, "Disable pushing tag into remote")
-	rootCmd.Flags().StringVar(&envPath, "export-path", "", "Destination file to export bash environment variable")
+	applyCmd.Flags().StringVar(&path, "path", ".", "The path of the repository")
+	applyCmd.MarkFlagRequired("path")
+	applyCmd.Flags().StringVar(&accessToken, "access-token", "", "The access token for git")
+	applyCmd.MarkFlagRequired("access-token")
+	applyCmd.Flags().StringArrayVar(&services, "service", []string{}, "Limit to this service")
+	applyCmd.Flags().BoolVar(&noPush, "no-push", false, "Disable pushing tag into remote")
+	applyCmd.Flags().StringVar(&envPath, "export-path", "", "Destination file to export bash environment variable")
 }

@@ -1,0 +1,8 @@
+version: 1.0
+services:
+  app:
+    version: 0.1.0
+    default-config: main
+    version-type: global
+    path: cmd/git_version_one
+    target-type: golang

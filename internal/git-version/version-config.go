@@ -18,6 +18,7 @@ const (
 const (
 	TargetTypeDotnet TargetType = "dotnet"
 	TargetTypeDocker TargetType = "docker"
+	TargetTypeGolang TargetType = "golang"
 )
 
 const (

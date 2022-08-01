@@ -3,6 +3,7 @@ package gitVersion
 import (
 	"DotnetGitHubVersion/internal/git-version/dotnet"
 	"DotnetGitHubVersion/internal/git-version/export"
+	"DotnetGitHubVersion/internal/git-version/golang"
 	"DotnetGitHubVersion/internal/git-version/wiki"
 	"fmt"
 	"github.com/go-git/go-git/v5"
@@ -56,6 +57,11 @@ func (s *GlobalGitVersion) ApplyVersioning(environment *Environment) error {
 
 	if s.service.TargetType == TargetTypeDotnet {
 		err = dotnet.SetVersionOnProject(*newVersion, filepath.Join(s.repoPath, s.service.Path))
+		if err != nil {
+			return err
+		}
+	} else if s.service.TargetType == TargetTypeGolang {
+		err = golang.SetVersion(*newVersion, filepath.Join(s.repoPath, s.service.Path))
 		if err != nil {
 			return err
 		}
