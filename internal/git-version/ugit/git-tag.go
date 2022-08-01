@@ -47,12 +47,14 @@ func Push(r *git.Repository, accessToken string) error {
 	url := fmt.Sprintf("https://%s@%s", accessToken, tmp)
 	cmd := exec.Command("git", "push", "--tags", url)
 	var out bytes.Buffer
+	var outErr bytes.Buffer
 	cmd.Stdout = &out
-	fmt.Printf("git push %s\n", out.String())
+	cmd.Stderr = &outErr
 	err = cmd.Run()
 	if err != nil {
 		return err
 	}
+	fmt.Printf("git push %s\n", out.String())
 	return nil
 }
 
