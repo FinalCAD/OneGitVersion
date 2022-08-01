@@ -8,6 +8,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"log"
 	"os"
+	"time"
 )
 
 func Tag(r *git.Repository, tag string) (bool, error) {
@@ -23,6 +24,11 @@ func Tag(r *git.Repository, tag string) (bool, error) {
 	}
 	_, err = r.CreateTag(tag, h.Hash(), &git.CreateTagOptions{
 		Message: tag,
+		Tagger: &object.Signature{
+			Name:  "BotMCS",
+			Email: "maxime.charles@finalcad.com",
+			When:  time.Now(),
+		},
 	})
 
 	if err != nil {
