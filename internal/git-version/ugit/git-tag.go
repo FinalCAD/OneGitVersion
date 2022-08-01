@@ -52,6 +52,7 @@ func Push(r *git.Repository, accessToken string) error {
 	cmd.Stderr = &outErr
 	err = cmd.Run()
 	if err != nil {
+		fmt.Printf("git push %s\n", outErr.String())
 		return err
 	}
 	fmt.Printf("git push %s\n", out.String())
