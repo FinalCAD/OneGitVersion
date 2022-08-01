@@ -1,6 +1,7 @@
 package wiki
 
 import (
+	"DotnetGitHubVersion/internal/git-version/ugit"
 	"errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -65,15 +66,10 @@ func NewGitWiki(repositoryPath string, repo *git.Repository, accessToken string)
 			path: wikiPath,
 		}, err
 	}
-	remotes, err := repo.Remotes()
+	remoteUrl, err := ugit.GetRemoteUrl(repo)
 	if err != nil {
 		return nil, err
 	}
-	if len(remotes) <= 0 {
-		return nil, errors.New("no remote found")
-	}
-	remote := remotes[0]
-	remoteUrl := remote.Config().URLs[0]
 	if !strings.HasPrefix(remoteUrl, "https://github.com/") {
 		return nil, errors.New("only github supported")
 	}

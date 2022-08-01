@@ -1,13 +1,12 @@
 package ugit
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"log"
-	"os"
+	"os/exec"
 	"time"
 )
 
@@ -40,26 +39,19 @@ func Tag(r *git.Repository, tag string) (bool, error) {
 }
 
 func Push(r *git.Repository, accessToken string) error {
-	po := &git.PushOptions{
-		RemoteName: "origin",
-		Progress:   os.Stdout,
-		RefSpecs:   []config.RefSpec{config.RefSpec("refs/tags/*:refs/tags/*")},
-		Auth: &http.BasicAuth{
-			Username: "go",
-			Password: accessToken,
-		},
-	}
-	err := r.Push(po)
-
+	remoteUrl, err := GetRemoteUrl(r)
 	if err != nil {
-		if err == git.NoErrAlreadyUpToDate {
-			log.Print("origin remote was up to date, no push done")
-			return nil
-		}
-		log.Printf("push to remote origin error: %s", err)
+		return nil
+	}
+	tmp := remoteUrl[len("https://"):]
+	url := fmt.Sprintf("https://%s@%s", accessToken, tmp)
+	cmd := exec.Command("git", "push", "--tags", url)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err = cmd.Run()
+	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
