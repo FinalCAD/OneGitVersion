@@ -51,10 +51,12 @@ func (s *GlobalGitVersion) ApplyVersioning(environment *Environment) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("New version %s\n", newVersion.String())
 	if newVersion != nil {
 		fmt.Printf("New version %s\n", newVersion.String())
 	}
 
+	fmt.Printf("Target type %s\n", s.service.TargetType)
 	if s.service.TargetType == TargetTypeDotnet {
 		err = dotnet.SetVersionOnProject(*newVersion, filepath.Join(s.repoPath, s.service.Path))
 		if err != nil {

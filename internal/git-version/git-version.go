@@ -38,8 +38,10 @@ func Apply(service *Service, repoPath string, parameters Parameters) error {
 
 	var gitVersioning GitVersion
 	if service.VersionType == VersionTypeGlobal {
+		fmt.Printf("Version with global rule\n")
 		gitVersioning = NewGlobalGitVersion(repo, service, branchName, repoPath, parameters)
 	} else if service.VersionType == VersionTypeDifferential {
+		fmt.Printf("Version with differential rule\n")
 		gitVersioning = NewDifferentialGitVersion(repo, service, branchName, repoPath, parameters)
 	}
 	return gitVersioning.ApplyVersioning(env)

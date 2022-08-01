@@ -7,6 +7,7 @@ import (
 )
 
 func saveVersion(gitVersion GitVersion, environment *Environment, name string, version semver.Version, push bool) error {
+	fmt.Printf("Auto tag with %s rule\n", gitVersion.GetService().TagType)
 	if gitVersion.GetService().TagType == TagTypeGit {
 		return saveGitVersion(gitVersion, version, push)
 	}
@@ -44,6 +45,7 @@ func saveWikiVersion(gitVersion GitVersion, environment *Environment, name strin
 
 func saveGitVersion(gitVersion GitVersion, version semver.Version, push bool) error {
 	tag := fmt.Sprintf("%s-%s", gitVersion.GetService().TagName, version.String())
+	fmt.Printf("Set tag on git %s\n", tag)
 	created, err := ugit.Tag(gitVersion.GetRepository(), tag)
 	if err != nil {
 		return err
