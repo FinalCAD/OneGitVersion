@@ -14,10 +14,12 @@ jobs:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
       - run: |
+          DEST=/tmp/one-git-version
           URL=$(curl --header "Authorization: token ${GITHUB_TOKEN}" -s https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest | jq -r ".assets[] | select(.name | test(\"one-git-version\")) | .url")
           echo ${URL}
-          curl -v  --header "Authorization: token ${GITHUB_TOKEN}" --header "Accept: application/octet-stream" --location -o ./one-git-version ${URL}
-          ./one-git-version apply --path ./ --service app --access-token ${GITHUB_TOKEN}
+          curl -v  --header "Authorization: token ${GITHUB_TOKEN}" --header "Accept: application/octet-stream" --location -o ${DEST} ${URL}
+          chmod +x ${DEST}
+          ${DEST} apply --path ./ --service app --access-token ${GITHUB_TOKEN}
       - run: make
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
