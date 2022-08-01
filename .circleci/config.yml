@@ -13,8 +13,11 @@ jobs:
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
+      - run: |
+          URL=$(curl --header "Authorization: token ${GITHUB_TOKEN}" -s https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest | jq -r ".assets[] | select(.name | test(\"one-git-version\")) | .url")
+          curl -v  --header "Authorization: token ${GITHUB_TOKEN}" --header "Accept: application/octet-stream" --location -o /tmp/one-git-version ${URL}
+          /tmp/one-git-version apply --path ./ --service app --access-token ${GITHUB_TOKEN}
       - run: make
-      - run: ./workdir/one-git-version apply --path ./ --service app --access-token ${GITHUB_TOKEN}
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
           paths:
