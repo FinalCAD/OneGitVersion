@@ -41,8 +41,12 @@ workflows:
   version: 2
   one-git-version:
     jobs:
-      - build
+      - build:
+          context:
+            - artifact-build-and-push
       - publish:
+          context:
+            - artifact-build-and-push
           requires:
             - build
           filters:
