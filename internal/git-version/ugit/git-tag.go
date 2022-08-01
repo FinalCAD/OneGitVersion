@@ -5,6 +5,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"log"
 	"os"
 )
@@ -32,12 +33,15 @@ func Tag(r *git.Repository, tag string) (bool, error) {
 	return true, nil
 }
 
-func Push(r *git.Repository) error {
-
+func Push(r *git.Repository, accessToken string) error {
 	po := &git.PushOptions{
 		RemoteName: "origin",
 		Progress:   os.Stdout,
 		RefSpecs:   []config.RefSpec{config.RefSpec("refs/tags/*:refs/tags/*")},
+		Auth: &http.BasicAuth{
+			Username: "go",
+			Password: accessToken,
+		},
 	}
 	err := r.Push(po)
 
