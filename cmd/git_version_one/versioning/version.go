@@ -1,3 +1,3 @@
 package versioning
 
-const Version = "0.1.0-localhost"
+const Version = "0.1.0"

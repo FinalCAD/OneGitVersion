@@ -18,6 +18,7 @@ func SetVersion(version semver.Version, path string) error {
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	_, err = file.WriteString("package versioning\n\n")
 	if err != nil {
