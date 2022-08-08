@@ -160,13 +160,15 @@ func (s *DifferentialGitVersion) findGitChanges(repoPath string) ([]string, erro
 	if err != nil {
 		return nil, err
 	}
-	gitDir := fmt.Sprintf("--git-dir=%s\\.git", repoPath)
-	fmt.Printf("gitDir %s\n", gitDir)
+	gitDir := fmt.Sprintf("--git-dir=%s", filepath.Join(repoPath, ".git"))
 	cmd := exec.Command("git", gitDir, "diff", "--name-only", currentCommit.Hash.String(), previousCommit.Hash.String())
 	var out bytes.Buffer
+	var outErr bytes.Buffer
 	cmd.Stdout = &out
+	cmd.Stderr = &outErr
 	err = cmd.Run()
 	if err != nil {
+		fmt.Printf("Error output: %s", outErr.String())
 		return nil, err
 	}
 	outStr := out.String()
