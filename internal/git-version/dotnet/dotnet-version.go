@@ -2,6 +2,7 @@ package dotnet
 
 import (
 	"errors"
+	"fmt"
 	"github.com/blang/semver/v4"
 	"io/ioutil"
 	"path/filepath"
@@ -24,6 +25,7 @@ func SetVersionOnProject(version semver.Version, projectDir string) error {
 		return err
 	}
 
+	fmt.Printf("Set version %s for project %s\n", version.String(), csprojPath)
 	err = csproj.setVersion(version, false)
 	if err != nil {
 		return err
