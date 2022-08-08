@@ -77,12 +77,15 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		return err
 	}
 	projectChanges := s.findProjectWithChanges(projectPaths, changes)
-	for _, project := range projectChanges {
-		err = s.versionProject(project.CsProj, project.Name(), environment, true)
+
+	for _, project := range projectPaths {
+		bumpVersion := projectPathContains(projectChanges, project)
+		err = s.versionProject(project.CsProj, project.Name(), environment, bumpVersion)
 		if err != nil {
 			return err
 		}
 	}
+
 	if environment.AutoTag && !s.parameters.NoPush {
 		err = s.wikiRepository.Push()
 		if err != nil {
@@ -90,6 +93,15 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		}
 	}
 	return nil
+}
+
+func projectPathContains(projectPaths []projectPath, element projectPath) bool {
+	for _, path := range projectPaths {
+		if path.CsProj == element.CsProj {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *DifferentialGitVersion) versionProject(csProjPath string, name string, environment *Environment, bumpVersion bool) error {
@@ -103,6 +115,7 @@ func (s *DifferentialGitVersion) versionProject(csProjPath string, name string, 
 			return err
 		}
 	}
+	fmt.Printf("Set version %s for project %s\n", version.String(), name)
 	if environment.AutoTag {
 		err = saveVersion(s, environment, name, *version, false)
 		if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -43,7 +44,7 @@ func getOrCreatePageFileName(name string, preReleaseName string, pageDir string)
 	if preReleaseName == "" {
 		fileName = fmt.Sprintf("%s.md", name)
 	} else {
-		fileName = fmt.Sprintf("%s-%s.md", name, preReleaseName)
+		fileName = fmt.Sprintf("%s-%s.md", name, strings.ReplaceAll(preReleaseName, "/", "-"))
 	}
 	return filepath.Join(pageDir, fileName)
 }
