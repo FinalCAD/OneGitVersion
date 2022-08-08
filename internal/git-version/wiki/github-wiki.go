@@ -3,6 +3,7 @@ package wiki
 import (
 	"DotnetGitHubVersion/internal/git-version/ugit"
 	"errors"
+	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"os"
@@ -72,6 +73,10 @@ func NewGitWiki(repositoryPath string, repo *git.Repository, accessToken string)
 	}
 	if !(strings.HasPrefix(remoteUrl, "https://github.com/") || strings.HasPrefix(remoteUrl, "git@github.com")) {
 		return nil, errors.New("only github supported")
+	}
+	if strings.HasPrefix(remoteUrl, "git@github.com") {
+		remoteUrl = "https://github.com/" + remoteUrl[len("git@github.com:"):]
+		fmt.Printf("Replace ssh version to https: %s\n", remoteUrl)
 	}
 	if !os.IsNotExist(err) {
 		remoteUrl = remoteUrl[:len(remoteUrl)-4]

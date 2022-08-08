@@ -23,7 +23,7 @@ type directoryBuildXml struct {
 }
 
 func (s *Project) setVersion(version semver.Version, setChildren bool) error {
-	directoryBuildFileName := "Directory.build.props"
+	directoryBuildFileName := "Directory.Build.props"
 	fmt.Printf("Create %s in %s\n", directoryBuildFileName, s.Directory)
 	configFilePath := filepath.Join(s.Directory, directoryBuildFileName)
 	file, err := os.OpenFile(configFilePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
