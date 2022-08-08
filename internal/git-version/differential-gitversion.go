@@ -89,6 +89,7 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		}
 		fmt.Printf("%d project changes found\n", len(projectChanges))
 	}
+	projectChanges = projectPaths
 	for _, project := range projectPaths {
 		bumpVersion := projectPathContains(projectChanges, project.CsProj)
 		err = s.versionProject(project.CsProj, project.Name(), environment, bumpVersion)
@@ -97,8 +98,31 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		}
 	}
 
+	err = s.writeProjectChangesIntoFile(projectChanges)
+	if err != nil {
+		return err
+	}
 	if environment.AutoTag && !s.parameters.NoPush {
 		err = s.wikiRepository.Push()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *DifferentialGitVersion) writeProjectChangesIntoFile(projectChanges []projectPath) error {
+	if len(projectChanges) == 0 {
+		return nil
+	}
+	path := filepath.Join(s.repoPath, "project-changes.log")
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	for _, changes := range projectChanges {
+		_, err = file.WriteString(changes.CsProj + "\n")
 		if err != nil {
 			return err
 		}
