@@ -1,6 +1,7 @@
 package gitVersion
 
 import (
+	"DotnetGitHubVersion/internal/git-version/common"
 	"DotnetGitHubVersion/internal/git-version/dotnet"
 	"DotnetGitHubVersion/internal/git-version/wiki"
 	"DotnetGitHubVersion/internal/utils/uarray"
@@ -82,10 +83,17 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 	if len(projectChanges) == 0 {
 		fmt.Printf("No project changes found\n")
 	} else {
+		projectChanges, err = s.dependencyCheckUpgrade(projectPaths, projectChanges)
+		if err != nil {
+			return err
+		}
 		fmt.Printf("%d project changes found\n", len(projectChanges))
 	}
+	// todo find if project has dependencies changes
+	// todo If project have dependencies changes bumpVersion otherwise nothing
+
 	for _, project := range projectPaths {
-		bumpVersion := projectPathContains(projectChanges, project)
+		bumpVersion := projectPathContains(projectChanges, project.CsProj)
 		err = s.versionProject(project.CsProj, project.Name(), environment, bumpVersion)
 		if err != nil {
 			return err
@@ -101,9 +109,44 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 	return nil
 }
 
-func projectPathContains(projectPaths []projectPath, element projectPath) bool {
+func (s *DifferentialGitVersion) dependencyCheckUpgrade(allProjects []projectPath, projectChanges []projectPath) ([]projectPath, error) {
+	change := false
+
+	for {
+		change = false
+		for _, p := range allProjects {
+			if projectPathContains(projectChanges, p.CsProj) {
+				continue
+			}
+			var deps []common.Dependency
+			var err error
+			if s.service.TargetType == TargetTypeDotnet {
+				deps, err = dotnet.GetDependencies(p.CsProj)
+			}
+			if err != nil {
+				return nil, err
+			}
+			for _, dep := range deps {
+				if projectPathContains(projectChanges, dep.Name) {
+					projectChanges = append(projectChanges, p)
+					change = true
+					break
+				}
+			}
+			if change {
+				break
+			}
+		}
+		if !change {
+			break
+		}
+	}
+	return projectChanges, nil
+}
+
+func projectPathContains(projectPaths []projectPath, element string) bool {
 	for _, path := range projectPaths {
-		if path.CsProj == element.CsProj {
+		if path.CsProj == element {
 			return true
 		}
 	}
@@ -182,6 +225,7 @@ func (s *DifferentialGitVersion) findProjFiles(seekingPath string, repositoryPat
 		return nil, err
 	}
 	var results []projectPath
+	// todo move to package dotnet
 	for _, element := range elements {
 		if !element.IsDir() && strings.HasSuffix(element.Name(), ".csproj") {
 			relativePath := seekingPath[len(repositoryPath)+1:]

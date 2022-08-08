@@ -9,17 +9,7 @@ import (
 )
 
 func SetVersionOnProject(version semver.Version, projectDir string) error {
-	var csprojPath string
-	if strings.HasSuffix(projectDir, ".csproj") {
-		csprojPath = projectDir
-	} else {
-		path, err := findCsprojFile(projectDir)
-		if err != nil {
-			return err
-		}
-		csprojPath = path
-	}
-	csproj, err := readCsproj(csprojPath)
+	csproj, err := openProject(projectDir)
 	if err != nil {
 		return err
 	}
