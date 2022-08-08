@@ -125,7 +125,7 @@ func (s *DifferentialGitVersion) versionProject(csProjPath string, name string, 
 	if environment.AutoTag {
 		err = saveVersion(s, environment, name, *version, false)
 		if err != nil {
-			return nil
+			return err
 		}
 	}
 	return nil

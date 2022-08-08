@@ -7,16 +7,15 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
 type VersionPage struct {
-	filePath       string
-	path           string
-	name           string
-	preReleaseName string
-	versions       []VersionLine
+	filePath     string
+	path         string
+	name         string
+	versions     []VersionLine
+	relativePath string
 }
 
 type VersionLine struct {
@@ -24,36 +23,35 @@ type VersionLine struct {
 	Commit  string
 }
 
-func NewVersionPage(name string, preReleaseName string, pageDir string) (*VersionPage, error) {
-	fileName := getOrCreatePageFileName(name, preReleaseName, pageDir)
+func NewVersionPage(name string, pageDir string, wikiPath string) (*VersionPage, error) {
+	fileName := getOrCreatePageFileName(name, pageDir)
 	v, err := readVersionPage(fileName)
 	if err != nil {
 		return nil, err
 	}
 	return &VersionPage{
-		path:           pageDir,
-		name:           name,
-		preReleaseName: preReleaseName,
-		versions:       v,
-		filePath:       fileName,
+		path:         pageDir,
+		name:         name,
+		versions:     v,
+		filePath:     fileName,
+		relativePath: fileName[len(wikiPath)+1:],
 	}, nil
 }
 
-func getOrCreatePageFileName(name string, preReleaseName string, pageDir string) string {
-	var fileName string
-	if preReleaseName == "" {
-		fileName = fmt.Sprintf("%s.md", name)
-	} else {
-		fileName = fmt.Sprintf("%s-%s.md", name, strings.ReplaceAll(preReleaseName, "/", "-"))
-	}
+func getOrCreatePageFileName(name string, pageDir string) string {
+	fileName := fmt.Sprintf("%s.md", name)
 	return filepath.Join(pageDir, fileName)
 }
 
 func (s *VersionPage) GetVersions() []semver.Version {
-	return nil
+	var versions []semver.Version
+	for _, version := range s.versions {
+		versions = append(versions, version.Version)
+	}
+	return versions
 }
 
-func (s *VersionPage) AddVersion(version semver.Version, commitHash string) {
+func (s *VersionPage) AddVersion(version semver.Version, commitHash string) bool {
 	c := false
 	for _, versionLine := range s.versions {
 		if versionLine.Version.Equals(version) {
@@ -65,7 +63,9 @@ func (s *VersionPage) AddVersion(version semver.Version, commitHash string) {
 			Version: version,
 			Commit:  commitHash,
 		})
+		return true
 	}
+	return false
 }
 
 func (s *VersionPage) Write() error {
@@ -73,7 +73,7 @@ func (s *VersionPage) Write() error {
 	if err != nil {
 		return err
 	}
-	_, err = file.WriteString(fmt.Sprintf("# %s - %s\n\n", s.name, s.preReleaseName))
+	_, err = file.WriteString(fmt.Sprintf("# %s\n\n", s.name))
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (s *VersionPage) GitAdd(gitWiki *GitWiki) error {
 	if err != nil {
 		return err
 	}
-	_, err = w.Add(s.filePath)
+	_, err = w.Add(s.relativePath)
 	if err != nil {
 		return err
 	}

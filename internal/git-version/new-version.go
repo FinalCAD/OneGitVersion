@@ -45,11 +45,7 @@ func getLastVersionFromTag(gitVersion GitVersion, name string, defaultVersion se
 }
 
 func getLastVersionFromWiki(gitVersion GitVersion, name string, environment *Environment, defaultVersion semver.Version) (*semver.Version, bool, error) {
-	var preReleaseName string
-	if environment.IsPrerelease {
-		preReleaseName = gitVersion.GetBranchName()
-	}
-	page, err := gitVersion.GetWikiRepository().ReadPage(name, gitVersion.GetService().TagName, preReleaseName)
+	page, err := gitVersion.GetWikiRepository().ReadPage(name, gitVersion.GetService().TagName)
 	if err != nil {
 		return nil, false, err
 	}
@@ -96,7 +92,7 @@ func createNewVersion(gitVersion GitVersion, environment *Environment, name stri
 		}
 	}
 
-	if environment.IsPrerelease {
+	if environment.IsPrerelease && bumpPatch {
 		buildNumber, err := countCommitSinceTag(gitVersion.GetRepository(), tagRef)
 		if err != nil {
 			return nil, err

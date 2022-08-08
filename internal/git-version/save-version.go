@@ -11,15 +11,12 @@ func saveVersion(gitVersion GitVersion, environment *Environment, name string, v
 	if gitVersion.GetService().TagType == TagTypeGit {
 		return saveGitVersion(gitVersion, version, push)
 	}
-	return saveWikiVersion(gitVersion, environment, name, version, push)
+	return saveWikiVersion(gitVersion, name, version, push)
 }
 
-func saveWikiVersion(gitVersion GitVersion, environment *Environment, name string, version semver.Version, push bool) error {
-	var preReleaseName string
-	if environment.IsPrerelease {
-		preReleaseName = gitVersion.GetBranchName()
-	}
-	page, err := gitVersion.GetWikiRepository().ReadPage(name, gitVersion.GetService().TagName, preReleaseName)
+func saveWikiVersion(gitVersion GitVersion, name string, version semver.Version, push bool) error {
+	wikiRepo := gitVersion.GetWikiRepository()
+	page, err := wikiRepo.ReadPage(name, gitVersion.GetService().TagName)
 	if err != nil {
 		return err
 	}
@@ -27,13 +24,18 @@ func saveWikiVersion(gitVersion GitVersion, environment *Environment, name strin
 	if err != nil {
 		return err
 	}
-	page.AddVersion(version, head.Hash().String())
+	added := page.AddVersion(version, head.Hash().String())
+	if !added {
+		return nil
+	}
 	err = page.Write()
 	if err != nil {
 		return err
 	}
-	wikiRepo := gitVersion.GetWikiRepository()
 	err = page.GitAdd(wikiRepo)
+	if err != nil {
+		return err
+	}
 	if push {
 		err = wikiRepo.Push()
 		if err != nil {

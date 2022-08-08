@@ -25,13 +25,13 @@ func (s *GitWiki) Push() error {
 		},
 	})
 }
-func (s *GitWiki) ReadPage(name string, appName string, preReleaseName string) (*VersionPage, error) {
+func (s *GitWiki) ReadPage(name string, appName string) (*VersionPage, error) {
 	pageDir := filepath.Join(s.path, appName)
 	err := assertDirectoryExists(pageDir)
 	if err != nil {
 		return nil, err
 	}
-	return NewVersionPage(name, preReleaseName, pageDir)
+	return NewVersionPage(name, pageDir, s.path)
 }
 
 func assertDirectoryExists(path string) error {
