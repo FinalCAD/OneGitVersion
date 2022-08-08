@@ -70,7 +70,7 @@ func NewGitWiki(repositoryPath string, repo *git.Repository, accessToken string)
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasPrefix(remoteUrl, "https://github.com/") {
+	if !(strings.HasPrefix(remoteUrl, "https://github.com/") || strings.HasPrefix(remoteUrl, "git@github.com")) {
 		return nil, errors.New("only github supported")
 	}
 	if !os.IsNotExist(err) {
