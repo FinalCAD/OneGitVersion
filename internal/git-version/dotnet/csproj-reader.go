@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type projectXml struct {
@@ -42,7 +43,11 @@ func readCsproj(path string) (Project, error) {
 	for _, itemGroup := range csproj.ItemGroups {
 		if itemGroup.ProjectReferences != nil {
 			for _, reference := range itemGroup.ProjectReferences {
-				depPath := filepath.Join(project.Directory, reference.Include)
+				include := reference.Include
+				if strings.Contains(include, "\\") {
+					include = strings.ReplaceAll(reference.Include, "\\", "/")
+				}
+				depPath := filepath.Join(project.Directory, include)
 				depProject, err := readCsproj(depPath)
 				if err != nil {
 					continue
