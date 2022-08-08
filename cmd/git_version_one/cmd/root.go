@@ -41,7 +41,6 @@ var applyCmd = &cobra.Command{
 		}
 		err = run(services, c, absolutePath)
 		if err != nil {
-			fmt.Printf("An error happened: %s\n", err)
 			fmt.Fprintln(os.Stderr, err)
 			return
 		}
