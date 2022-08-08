@@ -89,7 +89,7 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		}
 		fmt.Printf("%d project changes found\n", len(projectChanges))
 	}
-	projectChanges = projectPaths
+
 	for _, project := range projectPaths {
 		bumpVersion := projectPathContains(projectChanges, project.CsProj)
 		err = s.versionProject(project.CsProj, project.Name(), environment, bumpVersion)

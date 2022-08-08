@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type importXml struct {
@@ -40,17 +41,18 @@ func (s *Project) setVersion(version semver.Version, setChildren bool) error {
 			}
 		}
 	}
+	nugetVersion := strings.ReplaceAll(version.String(), "+", ".")
 	var existingVersion *projectGroupXml
 	for _, propertyGroup := range directoryBuild.PropertyGroups {
 		if propertyGroup.Version != "" {
 			existingVersion = &propertyGroup
-			existingVersion.Version = version.String()
+			existingVersion.Version = nugetVersion
 			break
 		}
 	}
 	if existingVersion == nil {
 		n := projectGroupXml{
-			Version: version.String(),
+			Version: nugetVersion,
 		}
 		directoryBuild.PropertyGroups = append(directoryBuild.PropertyGroups, n)
 	}
