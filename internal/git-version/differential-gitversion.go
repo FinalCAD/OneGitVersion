@@ -89,9 +89,6 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		}
 		fmt.Printf("%d project changes found\n", len(projectChanges))
 	}
-	// todo find if project has dependencies changes
-	// todo If project have dependencies changes bumpVersion otherwise nothing
-
 	for _, project := range projectPaths {
 		bumpVersion := projectPathContains(projectChanges, project.CsProj)
 		err = s.versionProject(project.CsProj, project.Name(), environment, bumpVersion)
