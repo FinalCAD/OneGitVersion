@@ -2,6 +2,7 @@ package dotnet
 
 import (
 	"encoding/xml"
+	"fmt"
 	"github.com/blang/semver/v4"
 	"io"
 	"io/ioutil"
@@ -22,7 +23,9 @@ type directoryBuildXml struct {
 }
 
 func (s *Project) setVersion(version semver.Version, setChildren bool) error {
-	configFilePath := filepath.Join(s.Directory, "Directory.build.props")
+	directoryBuildFileName := "Directory.build.props"
+	fmt.Printf("Create %s in %s\n", directoryBuildFileName, s.Directory)
+	configFilePath := filepath.Join(s.Directory, directoryBuildFileName)
 	file, err := os.OpenFile(configFilePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	var directoryBuild directoryBuildXml
 	if err == nil {
