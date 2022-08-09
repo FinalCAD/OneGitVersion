@@ -2,6 +2,7 @@ package config
 
 import (
 	gitVersion "DotnetGitHubVersion/internal/git-version"
+	"DotnetGitHubVersion/internal/utils/uarray"
 	"errors"
 	"fmt"
 	"gopkg.in/yaml.v3"
@@ -105,6 +106,23 @@ func setDefaultDevelopEnvironment(source *serviceModel, service *gitVersion.Serv
 			Ignore: []string{"develop"},
 		},
 	})
+	addOtherEnvironments(source, service, []string{"main", "others"})
+}
+
+func addOtherEnvironments(source *serviceModel, service *gitVersion.Service, defaultEnvs []string) {
+	for key, env := range source.Environments {
+		if !uarray.Contains(defaultEnvs, key) {
+			service.Environments[key] = &gitVersion.Environment{
+				IsPrerelease:  useDefault(env.IsPrerelease, true),
+				PrereleaseTag: useDefault(env.PrereleaseTag, ""),
+				AutoTag:       useDefault(env.AutoTag, false),
+				Branches: gitVersion.BranchFilter{
+					Only:   env.Branches.Only,
+					Ignore: env.Branches.Ignore,
+				},
+			}
+		}
+	}
 }
 
 func setDefaultMainEnvironment(source *serviceModel, service *gitVersion.Service) {
@@ -143,6 +161,7 @@ func setDefaultMainEnvironment(source *serviceModel, service *gitVersion.Service
 			Ignore: []string{"main", "master", "staging", "develop"},
 		},
 	})
+	addOtherEnvironments(source, service, []string{"main", "develop", "staging", "others"})
 }
 
 func mergeEnvironment(source *serviceModel, service *gitVersion.Service, name string, defaultEnv *gitVersion.Environment) {
