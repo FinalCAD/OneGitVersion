@@ -43,12 +43,8 @@ func getOrCreatePageFileName(name string, pageDir string) string {
 	return filepath.Join(pageDir, fileName)
 }
 
-func (s *VersionPage) GetVersions() []semver.Version {
-	var versions []semver.Version
-	for _, version := range s.versions {
-		versions = append(versions, version.Version)
-	}
-	return versions
+func (s *VersionPage) GetVersions() []VersionLine {
+	return s.versions
 }
 
 func (s *VersionPage) AddVersion(version semver.Version, commitHash string) bool {

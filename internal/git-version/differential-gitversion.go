@@ -7,6 +7,7 @@ import (
 	"DotnetGitHubVersion/internal/utils/uarray"
 	"bytes"
 	"fmt"
+	"github.com/blang/semver/v4"
 	"github.com/go-git/go-git/v5"
 	"os"
 	"os/exec"
@@ -29,7 +30,7 @@ type projectPath struct {
 }
 
 var (
-	excludeFolders []string = []string{"bin", "obj", ".git", ".circleci", ".idea"}
+	excludeFolders = []string{"bin", "obj", ".git", ".circleci", ".idea"}
 )
 
 func (s *projectPath) Name() string {
@@ -74,11 +75,7 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		return err
 	}
 	fmt.Printf("Find %d projects\n", len(projectPaths))
-	changes, err := s.findGitChanges(s.repoPath)
-	if err != nil {
-		return err
-	}
-	projectChanges := s.findProjectWithChanges(projectPaths, changes)
+	projectChanges, _ := s.findProjectWithChanges(projectPaths, environment)
 
 	if len(projectChanges) == 0 {
 		fmt.Printf("No project changes found\n")
@@ -175,6 +172,9 @@ func projectPathContains(projectPaths []projectPath, element string) bool {
 }
 
 func (s *DifferentialGitVersion) versionProject(csProjPath string, name string, environment *Environment, bumpVersion bool) error {
+	if !bumpVersion && environment.IsPrerelease {
+		bumpVersion = true
+	}
 	version, err := createNewVersion(s, environment, name, bumpVersion)
 	if err != nil {
 		return err
@@ -195,17 +195,21 @@ func (s *DifferentialGitVersion) versionProject(csProjPath string, name string, 
 	return nil
 }
 
-func (s *DifferentialGitVersion) findProjectWithChanges(paths []projectPath, changes []string) []projectPath {
+func (s *DifferentialGitVersion) findProjectWithChanges(paths []projectPath, environment *Environment) ([]projectPath, error) {
 	var projectChanges []projectPath
 	for _, path := range paths {
-		if uarray.StartWith(changes, path.RelativeDirectory) {
+		changes, err := s.findGitChanges(path, environment)
+		if err != nil {
+			return nil, err
+		}
+		if changes == nil || uarray.StartWith(changes, path.RelativeDirectory) {
 			projectChanges = append(projectChanges, path)
 		}
 	}
-	return projectChanges
+	return projectChanges, nil
 }
 
-func (s *DifferentialGitVersion) findGitChanges(repoPath string) ([]string, error) {
+func (s *DifferentialGitVersion) findGitChanges(path projectPath, environment *Environment) ([]string, error) {
 	head, err := s.repo.Head()
 	if err != nil {
 		return nil, err
@@ -220,12 +224,23 @@ func (s *DifferentialGitVersion) findGitChanges(repoPath string) ([]string, erro
 	if err != nil {
 		return nil, err
 	}
-	previousCommit, err := commits.Next()
+
+	_, hash, found, err := getLastVersion(s, environment, path.Name(), semver.Version{
+		Major: 0,
+		Minor: 0,
+		Patch: 0,
+		Pre:   nil,
+		Build: nil,
+	})
 	if err != nil {
 		return nil, err
 	}
-	gitDir := fmt.Sprintf("--git-dir=%s", filepath.Join(repoPath, ".git"))
-	cmd := exec.Command("git", gitDir, "diff", "--name-only", currentCommit.Hash.String(), previousCommit.Hash.String())
+	if !found {
+		return nil, nil
+	}
+	previousCommit := hash
+	gitDir := fmt.Sprintf("--git-dir=%s", filepath.Join(s.repoPath, ".git"))
+	cmd := exec.Command("git", gitDir, "diff", "--name-only", currentCommit.Hash.String(), previousCommit.String())
 	var out bytes.Buffer
 	var outErr bytes.Buffer
 	cmd.Stdout = &out
