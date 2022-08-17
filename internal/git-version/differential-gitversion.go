@@ -75,8 +75,10 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		return err
 	}
 	fmt.Printf("Find %d projects\n", len(projectPaths))
-	projectChanges, _ := s.findProjectWithChanges(projectPaths, environment)
-
+	projectChanges, err := s.findProjectWithChanges(projectPaths, environment)
+	if err != nil {
+		return err
+	}
 	if len(projectChanges) == 0 {
 		fmt.Printf("No project changes found\n")
 	} else {
@@ -84,7 +86,7 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%d project changes found\n", len(projectChanges))
+		fmt.Printf("%d/%d project changes found\n", len(projectChanges), len(projectPaths))
 	}
 
 	for _, project := range projectPaths {
@@ -172,9 +174,6 @@ func projectPathContains(projectPaths []projectPath, element string) bool {
 }
 
 func (s *DifferentialGitVersion) versionProject(csProjPath string, name string, environment *Environment, bumpVersion bool) error {
-	if !bumpVersion && environment.IsPrerelease {
-		bumpVersion = true
-	}
 	version, err := createNewVersion(s, environment, name, bumpVersion)
 	if err != nil {
 		return err
