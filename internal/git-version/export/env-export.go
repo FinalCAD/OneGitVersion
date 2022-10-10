@@ -19,5 +19,6 @@ func ExportEnv(envPath string, version semver.Version) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Export version in %s\n", envPath)
 	return nil
 }
