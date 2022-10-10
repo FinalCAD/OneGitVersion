@@ -37,6 +37,9 @@ func getLastVersionFromTag(gitVersion GitVersion, name string, defaultVersion se
 	if err != nil {
 		return nil, nil, false, err
 	}
+	if tagRef == nil {
+		return &latestVersion, nil, false, nil
+	}
 	return &latestVersion, &tagRef.Target, tagRef != nil, nil
 }
 
