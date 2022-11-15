@@ -97,7 +97,7 @@ func (s *DifferentialGitVersion) ApplyVersioning(environment *Environment) error
 		}
 	}
 
-	err = s.writeProjectChangesIntoFile(projectChanges)
+	err = s.writeProjectChangesIntoFile(projectPaths)
 	if err != nil {
 		return err
 	}
