@@ -20,6 +20,7 @@ type Parameters struct {
 	NoPush      bool
 	EnvPath     string
 	AccessToken string
+	GitBranch   string
 }
 
 func Apply(service *Service, repoPath string, parameters Parameters) error {
@@ -27,7 +28,7 @@ func Apply(service *Service, repoPath string, parameters Parameters) error {
 	if err != nil {
 		return err
 	}
-	branchName, err := getBranchName(repo)
+	branchName, err := getBranchName(repo, parameters.GitBranch)
 	fmt.Printf("Current branch: %s\n", branchName)
 	if err != nil {
 		return err
@@ -48,8 +49,12 @@ func Apply(service *Service, repoPath string, parameters Parameters) error {
 	return gitVersioning.ApplyVersioning(env)
 }
 
-func getBranchName(repo *git.Repository) (string, error) {
+func getBranchName(repo *git.Repository, gitBranch string) (string, error) {
 	headRef, err := repo.Head()
+	if headRef.Name() == "HEAD" {
+		fmt.Printf("Use --git-branch argument because branch name cannot be retrieve")
+		return gitBranch, nil
+	}
 	fmt.Printf("HeadRef: %s\n", headRef.Name())
 	if err != nil {
 		return "", err

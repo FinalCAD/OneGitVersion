@@ -16,6 +16,7 @@ var (
 	noPush      bool
 	envPath     string
 	accessToken string
+	gitBranch   string
 )
 
 var rootCmd = &cobra.Command{
@@ -57,6 +58,7 @@ func run(services []string, config *git_version.VersionConfig, repoPath string) 
 			NoPush:      noPush,
 			EnvPath:     envPath,
 			AccessToken: accessToken,
+			GitBranch:   gitBranch,
 		})
 		if err != nil {
 			return err
@@ -86,6 +88,7 @@ func init() {
 	applyCmd.Flags().StringVar(&accessToken, "access-token", "", "The access token for git")
 	applyCmd.MarkFlagRequired("access-token")
 	applyCmd.Flags().StringArrayVar(&services, "service", []string{}, "Limit to this service")
+	applyCmd.Flags().StringVar(&gitBranch, "git-branch", "", "The current git branch")
 	applyCmd.Flags().BoolVar(&noPush, "no-push", false, "Disable pushing tag into remote")
 	applyCmd.Flags().StringVar(&envPath, "export-path", "", "Destination file to export bash environment variable")
 }
