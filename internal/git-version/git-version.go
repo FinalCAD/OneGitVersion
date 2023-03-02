@@ -28,6 +28,7 @@ func Apply(service *Service, repoPath string, parameters Parameters) error {
 		return err
 	}
 	branchName, err := getBranchName(repo)
+	fmt.Printf("Current branch: %s\n", branchName)
 	if err != nil {
 		return err
 	}
@@ -49,6 +50,7 @@ func Apply(service *Service, repoPath string, parameters Parameters) error {
 
 func getBranchName(repo *git.Repository) (string, error) {
 	headRef, err := repo.Head()
+	fmt.Printf("HeadRef: %s\n", headRef.Name())
 	if err != nil {
 		return "", err
 	}
